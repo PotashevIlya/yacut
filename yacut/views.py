@@ -27,9 +27,9 @@ def get_unique_short_id():
 def index_view():
     form = YaCutForm()
     if form.validate_on_submit():
-        original = form.data.get('original_link')
-        short = form.data.get('custom_id')
-        if short is None:
+        original = form.original_link.data
+        short = form.custom_id.data
+        if not short:
             short = get_unique_short_id()
         if URLMap.query.filter_by(short=short).first() is not None:
             flash('Предложенный вариант короткой ссылки уже существует.')
