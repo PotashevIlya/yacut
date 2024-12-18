@@ -31,6 +31,15 @@
                 {% endif %}
               {{ form.submit(class="btn btn-primary")}}
             </form>
+            <p class="py-3 mb-3">
+              {% with messages = get_flashed_messages() %}
+                {% if messages %}
+                  {% for message in messages %}
+                    {{ message }}
+                  {% endfor %}
+                {% endif %}
+              {% endwith %}
+            </p>
           </div>
           <div class="col-sm">
           </div>
@@ -44,7 +53,7 @@
           <div class="col-sm">
             <p class="text-center">
             <h5 class="text-center">Ваша новая ссылка готова:
-              <a href="{{ url_for('redirect_view', id=urlmap.short, _external=True) }}">{{ url_for('redirect_view', id=urlmap.short, _external=True) }}</a>
+              <a href="{{ url_for('redirect_view', short_link=urlmap.short, _external=True) }}">{{ url_for('redirect_view', short_link=urlmap.short, _external=True) }}</a>
             </h5>
             </p>
           </div>

@@ -1,6 +1,6 @@
 import random
 
-from flask import redirect, render_template
+from flask import abort, flash, redirect, render_template
 
 from . import app, db
 from .forms import YaCutForm
@@ -27,12 +27,13 @@ def get_unique_short_id():
 def index_view():
     form = YaCutForm()
     if form.validate_on_submit():
-        original = form.original_link.data
-        print(form.data)
-        if form.data['custom_id'] == '':
+        original = form.data.get('original_link')
+        short = form.data.get('custom_id')
+        if short is None:
             short = get_unique_short_id()
-        else:
-            short = form.custom_id.data
+        if URLMap.query.filter_by(short=short).first() is not None:
+            flash('Предложенный вариант короткой ссылки уже существует.')
+            return render_template('main_page.html', form=form)
         urlmap = URLMap(
             original=original,
             short=short
@@ -43,8 +44,10 @@ def index_view():
     return render_template('main_page.html', form=form)
 
 
-@app.route('/<string:id>/')
-def redirect_view(id):
-    urlmap = URLMap.query.filter_by(short=id).first()
+@app.route('/<string:short_link>')
+def redirect_view(short_link):
+    urlmap = URLMap.query.filter_by(short=short_link).first()
+    if urlmap is None:
+        abort(404)
     return redirect(urlmap.original)
 

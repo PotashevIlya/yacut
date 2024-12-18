@@ -10,6 +10,7 @@ class YaCutForm(FlaskForm):
     )
     custom_id = StringField(
         'Ваш вариант короткой ссылки',
-        validators=[Length(1, 16), Optional()]
+        validators=[Length(1, 16), Optional()],
+        default=None
     )
     submit = SubmitField('Создать')
