@@ -1,6 +1,10 @@
 from flask_wtf import FlaskForm
 from wtforms import StringField, SubmitField, URLField
-from wtforms.validators import DataRequired, Length, Optional
+from wtforms.validators import DataRequired, Length, Optional, Regexp
+
+from settings import MAX_CUSTOM_SHORT_LENGTH, REGEXP_FOR_SHORT
+
+SUBMIT_LABEL = 'Создать'
 
 
 class YaCutForm(FlaskForm):
@@ -10,6 +14,13 @@ class YaCutForm(FlaskForm):
     )
     custom_id = StringField(
         'Ваш вариант короткой ссылки',
-        validators=[Length(1, 16), Optional()],
+        validators=[
+            Length(max=MAX_CUSTOM_SHORT_LENGTH),
+            Regexp(
+                REGEXP_FOR_SHORT,
+                message='Допустимы латинские буквы и цифры'
+            ),
+            Optional()
+        ]
     )
-    submit = SubmitField('Создать')
+    submit = SubmitField(SUBMIT_LABEL)

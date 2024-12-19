@@ -1,32 +1,42 @@
 from flask import jsonify, request
 
-from . import app, db
+from . import app
 from .error_handlers import InvalidAPIUsage
 from .models import URLMap
-from .validators import validate_custom_id
-from .views import get_unique_short_id
+from settings import PAGE_NOT_FOUND_STATUS_CODE, BAD_REQUEST_STATUS_CODE, OK_STATUS_CODE, CREATED_STATUS_CODE
 
 
-@app.route('/api/id/<string:short_id>/', methods=['GET'])
-def get_original_link(short_id):
-    urlmap = URLMap.query.filter_by(short=short_id).first()
+SHORT_NOT_FOUND_MESSAGE = 'Указанный id не найден'
+EMPTY_REQUEST_BODY_MESSAGE = 'Отсутствует тело запроса'
+NO_URL_IN_BODY_MESSAGE = '"url" является обязательным полем!'
+
+
+@app.route('/api/id/<string:short>/', methods=['GET'])
+def get_original_link(short):
+    urlmap = URLMap.get_url_map_object(short)
     if urlmap is None:
-        raise InvalidAPIUsage('Указанный id не найден', 404)
-    return jsonify(urlmap.to_dict()), 200
+        raise InvalidAPIUsage(
+            SHORT_NOT_FOUND_MESSAGE,
+            PAGE_NOT_FOUND_STATUS_CODE
+        )
+    return jsonify({'url': urlmap.original}), OK_STATUS_CODE
 
 
 @app.route('/api/id/', methods=['POST'])
 def create_short_link():
     data = request.get_json(silent=True)
     if data is None:
-        raise InvalidAPIUsage('Отсутствует тело запроса', 400)
+        raise InvalidAPIUsage(
+            EMPTY_REQUEST_BODY_MESSAGE,
+            BAD_REQUEST_STATUS_CODE
+        )
     if 'url' not in data:
-        raise InvalidAPIUsage('\"url\" является обязательным полем!', 400)
-    if 'custom_id' not in data or len(data['custom_id']) == 0:
-        data['custom_id'] = get_unique_short_id()
-    validate_custom_id(data['custom_id'])
-    urlmap = URLMap()
-    urlmap.from_dict(data)
-    db.session.add(urlmap)
-    db.session.commit()
-    return jsonify(urlmap.to_dict(short_link=True)), 201
+        raise InvalidAPIUsage(
+            NO_URL_IN_BODY_MESSAGE,
+            BAD_REQUEST_STATUS_CODE
+        )
+    url_map = URLMap.create_url_map_object(
+        data.get('url'),
+        data.get('custom_id')
+    )
+    return jsonify(url_map.to_dict()), CREATED_STATUS_CODE
