@@ -1,12 +1,11 @@
+from http import HTTPStatus
 from flask import jsonify, request
 
 from . import app
-from .error_handlers import InvalidAPIUsage
-from .models import URLMap
-from settings import (
-    PAGE_NOT_FOUND_STATUS_CODE, BAD_REQUEST_STATUS_CODE,
-    OK_STATUS_CODE, CREATED_STATUS_CODE
+from .error_handlers import (
+    InvalidAPIUsage, ShortGeneratingError, ObjectCreationError
 )
+from .models import URLMap
 
 
 SHORT_NOT_FOUND_MESSAGE = 'Указанный id не найден'
@@ -16,13 +15,13 @@ NO_URL_IN_BODY_MESSAGE = '"url" является обязательным пол
 
 @app.route('/api/id/<string:short>/', methods=['GET'])
 def get_original_link(short):
-    urlmap = URLMap.get_url_map_object(short)
+    urlmap = URLMap.get(short)
     if urlmap is None:
         raise InvalidAPIUsage(
             SHORT_NOT_FOUND_MESSAGE,
-            PAGE_NOT_FOUND_STATUS_CODE
+            HTTPStatus.NOT_FOUND
         )
-    return jsonify({'url': urlmap.original}), OK_STATUS_CODE
+    return jsonify({'url': urlmap.original}), HTTPStatus.OK
 
 
 @app.route('/api/id/', methods=['POST'])
@@ -31,15 +30,21 @@ def create_short_link():
     if data is None:
         raise InvalidAPIUsage(
             EMPTY_REQUEST_BODY_MESSAGE,
-            BAD_REQUEST_STATUS_CODE
         )
     if 'url' not in data:
         raise InvalidAPIUsage(
             NO_URL_IN_BODY_MESSAGE,
-            BAD_REQUEST_STATUS_CODE
         )
-    url_map = URLMap.create_url_map_object(
-        data.get('url'),
-        data.get('custom_id')
-    )
-    return jsonify(url_map.to_dict()), CREATED_STATUS_CODE
+    try:
+        url_map = URLMap.create(
+            data['url'],
+            data.get('custom_id')
+        )
+    except ShortGeneratingError as e:
+        raise InvalidAPIUsage(
+            str(e),
+            status_code=HTTPStatus.INTERNAL_SERVER_ERROR
+        )
+    except ObjectCreationError as e:
+        raise InvalidAPIUsage(str(e))
+    return jsonify(url_map.to_dict()), HTTPStatus.CREATED

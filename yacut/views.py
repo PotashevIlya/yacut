@@ -1,12 +1,10 @@
-from flask import abort, redirect, render_template, url_for
+from http import HTTPStatus
+from flask import abort, flash, redirect, render_template
 
 from . import app
-from .error_handlers import ShortGeneratingError
+from .error_handlers import ShortGeneratingError, ObjectCreationError
 from .forms import YaCutForm
 from .models import URLMap
-from settings import (
-    PAGE_NOT_FOUND_STATUS_CODE, INTERNAL_ERROR_STATUS_CODE, REDIRECT_VIEW_NAME
-)
 
 
 @app.route('/', methods=['GET', 'POST'])
@@ -15,25 +13,26 @@ def index_view():
     if not form.validate_on_submit():
         return render_template('index.html', form=form)
     try:
-        url_map = URLMap.create_url_map_object(
+        url_map = URLMap.create(
             form.original_link.data,
-            form.custom_id.data,
-            from_api=False
+            form.custom_id.data
         )
-    except ShortGeneratingError:
-        abort(INTERNAL_ERROR_STATUS_CODE)
-    if not url_map:
+    except ObjectCreationError as e:
+        flash(e)
+        return render_template('index.html', form=form)
+    except ShortGeneratingError as e:
+        flash(e)
         return render_template('index.html', form=form)
     return render_template(
         'index.html',
         form=form,
-        link=url_for(REDIRECT_VIEW_NAME, short=url_map.short, _external=True)
+        link=url_map.create_full_short_link()
     )
 
 
 @app.route('/<string:short>')
 def redirect_view(short):
-    url_map = URLMap.get_url_map_object(short)
+    url_map = URLMap.get(short)
     if url_map is None:
-        abort(PAGE_NOT_FOUND_STATUS_CODE)
+        abort(HTTPStatus.NOT_FOUND)
     return redirect(url_map.original)

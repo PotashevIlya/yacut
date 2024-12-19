@@ -1,26 +1,25 @@
+from http import HTTPStatus
 from flask import jsonify, render_template
 
 from . import app, db
-from settings import PAGE_NOT_FOUND_STATUS_CODE, INTERNAL_ERROR_STATUS_CODE
-
-
-class InvalidAPIUsage(Exception):
-
-    def __init__(self, message, status_code):
-        super().__init__()
-        self.message = message
-        self.status_code = status_code
-
-    def to_dict(self):
-        return dict(message=self.message)
 
 
 class ShortGeneratingError(Exception):
+    """Ошибка при создании короткого идентификатора"""
 
-    def __init__(self, message, status_code):
+
+class ObjectCreationError(Exception):
+    """Ошибка при создании объекта в БД"""
+
+
+class InvalidAPIUsage(Exception):
+    status_code = HTTPStatus.BAD_REQUEST
+
+    def __init__(self, message, status_code=None):
         super().__init__()
         self.message = message
-        self.status_code = status_code
+        if status_code is not None:
+            self.status_code = status_code
 
     def to_dict(self):
         return dict(message=self.message)
@@ -31,17 +30,12 @@ def invalid_api_usage(error):
     return jsonify(error.to_dict()), error.status_code
 
 
-@app.errorhandler(ShortGeneratingError)
-def short_generating_error(error):
-    return jsonify(error.to_dict()), error.status_code
-
-
-@app.errorhandler(404)
+@app.errorhandler(HTTPStatus.NOT_FOUND)
 def page_not_found(error):
-    return render_template('404.html'), PAGE_NOT_FOUND_STATUS_CODE
+    return render_template('404.html'), HTTPStatus.NOT_FOUND
 
 
-@app.errorhandler(500)
+@app.errorhandler(HTTPStatus.INTERNAL_SERVER_ERROR)
 def internal_error(error):
     db.session.rollback()
-    return render_template('500.html'), INTERNAL_ERROR_STATUS_CODE
+    return render_template('500.html'), HTTPStatus.INTERNAL_SERVER_ERROR
