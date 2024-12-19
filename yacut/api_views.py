@@ -3,7 +3,10 @@ from flask import jsonify, request
 from . import app
 from .error_handlers import InvalidAPIUsage
 from .models import URLMap
-from settings import PAGE_NOT_FOUND_STATUS_CODE, BAD_REQUEST_STATUS_CODE, OK_STATUS_CODE, CREATED_STATUS_CODE
+from settings import (
+    PAGE_NOT_FOUND_STATUS_CODE, BAD_REQUEST_STATUS_CODE,
+    OK_STATUS_CODE, CREATED_STATUS_CODE
+)
 
 
 SHORT_NOT_FOUND_MESSAGE = 'Указанный id не найден'
