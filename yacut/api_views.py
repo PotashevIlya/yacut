@@ -1,5 +1,5 @@
 from http import HTTPStatus
-from flask import jsonify, request
+from flask import jsonify, request, render_template
 
 from . import app
 from .error_handlers import (
@@ -48,3 +48,8 @@ def create_short_link():
     except ObjectCreationError as e:
         raise InvalidAPIUsage(str(e))
     return jsonify(url_map.to_dict()), HTTPStatus.CREATED
+
+
+@app.route('/redoc')
+def get_api_specification():
+    return render_template('redoc.html')

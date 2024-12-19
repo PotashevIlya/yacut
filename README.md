@@ -71,7 +71,7 @@ flask run
 }
 ```
 
-Полная спецификация представлена в openapi.yml. Для удобства можно воспользоваться [онлайн-редактором Swagger Editor](https://editor.swagger.io/)
+Полная спецификация будет доступна по ссылке /redoc после запуска сервера.
 
 ### Технологический стек :bulb:
 Python, Flask, SQLAlchemy, WTForms
