@@ -1,4 +1,5 @@
 from http import HTTPStatus
+
 from flask import abort, flash, redirect, render_template
 
 from . import app
@@ -17,16 +18,13 @@ def index_view():
             form.original_link.data,
             form.custom_id.data
         )
-    except ObjectCreationError as e:
-        flash(e)
-        return render_template('index.html', form=form)
-    except ShortGeneratingError as e:
+    except Exception as e:
         flash(e)
         return render_template('index.html', form=form)
     return render_template(
         'index.html',
         form=form,
-        link=url_map.create_full_short_link()
+        link=url_map.get_full_short_link()
     )
 
 

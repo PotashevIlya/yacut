@@ -1,4 +1,5 @@
 from http import HTTPStatus
+
 from flask import jsonify, request, render_template
 
 from . import app
@@ -15,13 +16,13 @@ NO_URL_IN_BODY_MESSAGE = '"url" является обязательным пол
 
 @app.route('/api/id/<string:short>/', methods=['GET'])
 def get_original_link(short):
-    urlmap = URLMap.get(short)
-    if urlmap is None:
+    url_map = URLMap.get(short)
+    if url_map is None:
         raise InvalidAPIUsage(
             SHORT_NOT_FOUND_MESSAGE,
             HTTPStatus.NOT_FOUND
         )
-    return jsonify({'url': urlmap.original}), HTTPStatus.OK
+    return jsonify({'url': url_map.original}), HTTPStatus.OK
 
 
 @app.route('/api/id/', methods=['POST'])
