@@ -39,19 +39,16 @@ class URLMap(db.Model):
 
     @staticmethod
     def create(original, short, validation=False):
+        if validation:
+            if len(original) > MAX_ORIGINAL_LENGTH:
+                raise ObjectCreationError(INVALID_ORIGINAL_MESSAGE)
         if short:
-            if URLMap.get(short) is not None:
-                raise ObjectCreationError(
-                    SHORT_EXISTS_MESSAGE
-                )
             if validation:
-                if len(original) > MAX_ORIGINAL_LENGTH:
-                    raise ObjectCreationError(INVALID_ORIGINAL_MESSAGE)
                 if (len(short) > MAX_CUSTOM_SHORT_LENGTH or
                         re.match(REGEXP_FOR_SHORT, short) is None):
-                    raise ObjectCreationError(
-                        INVALID_SHORT_MESSAGE
-                    )
+                    raise ObjectCreationError(INVALID_SHORT_MESSAGE)
+            if URLMap.get(short) is not None:
+                raise ObjectCreationError(SHORT_EXISTS_MESSAGE)
         else:
             short = URLMap.generate_short()
         url_map = URLMap(original=original, short=short)

@@ -43,5 +43,5 @@ def create_short_link():
             validation=True
         )
     except ObjectCreationError as e:
-        raise InvalidAPIUsage(str(e), status_code=HTTPStatus.BAD_REQUEST)
+        raise InvalidAPIUsage(str(e))
     return jsonify(url_map.to_dict()), HTTPStatus.CREATED
