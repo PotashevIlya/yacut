@@ -3,6 +3,7 @@ from http import HTTPStatus
 from flask import abort, flash, redirect, render_template
 
 from . import app
+from .error_handlers import ObjectCreationError
 from .forms import YaCutForm
 from .models import URLMap
 
@@ -17,7 +18,7 @@ def index_view():
             form.original_link.data,
             form.custom_id.data
         )
-    except Exception as e:
+    except ObjectCreationError as e:
         flash(e)
         return render_template('index.html', form=form)
     return render_template(
@@ -33,3 +34,8 @@ def redirect_view(short):
     if url_map is None:
         abort(HTTPStatus.NOT_FOUND)
     return redirect(url_map.original)
+
+
+@app.route('/redoc')
+def get_api_specification():
+    return render_template('redoc.html')

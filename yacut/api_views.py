@@ -1,10 +1,10 @@
 from http import HTTPStatus
 
-from flask import jsonify, request, render_template
+from flask import jsonify, request
 
 from . import app
 from .error_handlers import (
-    InvalidAPIUsage, ShortGeneratingError, ObjectCreationError
+    InvalidAPIUsage, ObjectCreationError
 )
 from .models import URLMap
 
@@ -39,18 +39,9 @@ def create_short_link():
     try:
         url_map = URLMap.create(
             data['url'],
-            data.get('custom_id')
-        )
-    except ShortGeneratingError as e:
-        raise InvalidAPIUsage(
-            str(e),
-            status_code=HTTPStatus.INTERNAL_SERVER_ERROR
+            data.get('custom_id'),
+            validation=True
         )
     except ObjectCreationError as e:
-        raise InvalidAPIUsage(str(e))
+        raise InvalidAPIUsage(str(e), status_code=HTTPStatus.BAD_REQUEST)
     return jsonify(url_map.to_dict()), HTTPStatus.CREATED
-
-
-@app.route('/redoc')
-def get_api_specification():
-    return render_template('redoc.html')

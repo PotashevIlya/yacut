@@ -5,7 +5,7 @@ from datetime import datetime
 from flask import url_for
 
 from . import db
-from .error_handlers import ObjectCreationError, ShortGeneratingError
+from .error_handlers import ObjectCreationError
 from settings import (
     SYMBOLS_FOR_SHORT, MAX_RANDOM_SHORT_LENGTH, SHORT_GENERATING_ITERATIONS,
     SHORT_GENERATING_FAILURE_MESSAGE, REGEXP_FOR_SHORT, INVALID_SHORT_MESSAGE,
@@ -38,11 +38,20 @@ class URLMap(db.Model):
         return URLMap.query.filter_by(short=short).first()
 
     @staticmethod
-    def create(original, short):
-        if len(original) > MAX_ORIGINAL_LENGTH:
-            raise ObjectCreationError(INVALID_ORIGINAL_MESSAGE)
+    def create(original, short, validation=False):
         if short:
-            URLMap.validate_short(short)
+            if URLMap.get(short) is not None:
+                raise ObjectCreationError(
+                    SHORT_EXISTS_MESSAGE
+                )
+            if validation:
+                if len(original) > MAX_ORIGINAL_LENGTH:
+                    raise ObjectCreationError(INVALID_ORIGINAL_MESSAGE)
+                if (len(short) > MAX_CUSTOM_SHORT_LENGTH or
+                        re.match(REGEXP_FOR_SHORT, short) is None):
+                    raise ObjectCreationError(
+                        INVALID_SHORT_MESSAGE
+                    )
         else:
             short = URLMap.generate_short()
         url_map = URLMap(original=original, short=short)
@@ -59,21 +68,6 @@ class URLMap(db.Model):
             ))
             if URLMap.get(short) is None:
                 return short
-        raise ShortGeneratingError(
+        raise ObjectCreationError(
             SHORT_GENERATING_FAILURE_MESSAGE,
         )
-
-    @staticmethod
-    def validate_short(short):
-        if len(short) > MAX_CUSTOM_SHORT_LENGTH:
-            raise ObjectCreationError(
-                INVALID_SHORT_MESSAGE
-            )
-        if re.match(REGEXP_FOR_SHORT, short) is None:
-            raise ObjectCreationError(
-                INVALID_SHORT_MESSAGE
-            )
-        if URLMap.get(short) is not None:
-            raise ObjectCreationError(
-                SHORT_EXISTS_MESSAGE
-            )

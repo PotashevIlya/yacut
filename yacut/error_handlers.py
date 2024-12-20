@@ -5,10 +5,6 @@ from flask import jsonify, render_template
 from . import app, db
 
 
-class ShortGeneratingError(Exception):
-    """Ошибка при создании короткого идентификатора"""
-
-
 class ObjectCreationError(Exception):
     """Ошибка при создании объекта в БД"""
 
