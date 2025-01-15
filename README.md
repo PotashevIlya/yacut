@@ -53,28 +53,37 @@ flask run
 
 ## Доступные эндпоинты для API:
 
-**GET:** http://127.0.0.1:5000/api/id/<short>/
+**GET:** http://127.0.0.1:8000/charity_project/
 
-<sub>Получить оригинальную ссылку, ассоциированную с короткой</sub>
+<sub>Получить список всех проектов фонда.</sub>
+```
+[
+  {
+    "name": "string",
+    "description": "string",
+    "full_amount": 0,
+    "id": 0,
+    "invested_amount": 0,
+    "fully_invested": true,
+    "create_date": "2025-01-15T11:37:23.655Z",
+    "close_date": "2025-01-15T11:37:23.655Z"
+  }
+]
+```
+**POST:** http://127.0.0.1:8000/donation/
+
+<sub>Сделать пожертвование.</sub>
 ```
 {
-"url": "string"
-}
-```
-**POST:** http://127.0.0.1:5000/api/id/
-
-<sub>Получение короткой ссылки для оригинальной (поле short_link опционально)</sub>
-```
-{
-"url": "string",
-"short_link": "string"
+  "full_amount": 0,
+  "comment": "string"
 }
 ```
 
-Полная спецификация будет доступна по ссылке /redoc после запуска сервера
+Полная спецификация будет доступна по ссылкам /docs или /redoc после запуска сервера
 
 ### Технологический стек :bulb:
-Python, Flask, SQLAlchemy, WTForms
+Python, FastAPI, SQLAlchemy
 ___  
 #### Автор проекта:  
 :small_orange_diamond: [Поташев Илья](https://github.com/PotashevIlya)  
